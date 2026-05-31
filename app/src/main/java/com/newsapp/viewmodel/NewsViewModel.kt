@@ -9,6 +9,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.newsapp.data.NewsApiService
+import java.net.URL
 
 // 100+ Public RSS Feeds for categories, grouped regionally
 val countryFeeds = mapOf(
@@ -322,11 +324,15 @@ val countryFeeds = mapOf(
             "https://www.smh.com.au/sport/rss/feed.xml" to "SMH Sport",
             "https://www.theage.com.au/sport/rss/feed.xml" to "The Age Sport"
         )
+    ),
+    "Local \uD83D\uDCCD" to mapOf(
+        "Top Stories" to emptyList()
     )
 )
 
 class NewsViewModel : ViewModel() {
     private val parser = RssParser()
+    private val apiService = NewsApiService.create()
     
     private val _newsItems = MutableStateFlow<List<NewsItem>>(emptyList())
     val newsItems: StateFlow<List<NewsItem>> = _newsItems
@@ -344,6 +350,9 @@ class NewsViewModel : ViewModel() {
 
     private val _selectedCategory = MutableStateFlow("All News")
     val selectedCategory: StateFlow<String> = _selectedCategory
+
+    private val _localCity = MutableStateFlow<String?>(null)
+    val localCity: StateFlow<String?> = _localCity
 
     init {
         fetchNews("All News", "Global \uD83C\uDF10")
@@ -372,6 +381,13 @@ class NewsViewModel : ViewModel() {
         }
     }
 
+    fun setLocalCity(city: String) {
+        _localCity.value = city
+        if (_selectedCountry.value == "Local \uD83D\uDCCD") {
+            fetchNews(_selectedCategory.value, "Local \uD83D\uDCCD")
+        }
+    }
+
     fun refreshNews() {
         fetchNews(_selectedCategory.value, _selectedCountry.value)
     }
@@ -379,23 +395,40 @@ class NewsViewModel : ViewModel() {
     private fun fetchNews(category: String, country: String) {
         viewModelScope.launch {
             _isLoading.value = true
-            val sources = countryFeeds[country]?.get(category) ?: emptyList()
             
             // Clear current news before fetching new category
             _newsItems.value = emptyList()
 
-            withContext(Dispatchers.IO) {
-                sources.forEach { source ->
-                    launch {
-                        val fetchedItems = parser.fetchFeed(source.first, source.second)
-                        if (fetchedItems.isNotEmpty()) {
-                            // Safely update the shared flow with the new items
-                            val currentList = _newsItems.value
-                            val combinedList = currentList + fetchedItems
-                            val mergedNews = groupSimilarNews(combinedList)
-                            
-                            // Emit the progressively grouped list back to the UI
-                            _newsItems.value = mergedNews.sortedByDescending { it.pubDate }
+            if (country == "Local \uD83D\uDCCD") {
+                val city = _localCity.value
+                if (!city.isNullOrBlank()) {
+                    withContext(Dispatchers.IO) {
+                        try {
+                            val responseBody = apiService.getRssFeed("rss/search?q=${city.replace(" ", "+")}+news")
+                            val fetchedItems = parser.parseFeed(responseBody.byteStream(), "$city News", URL("https://news.google.com/"))
+                            withContext(Dispatchers.Main) {
+                                _newsItems.value = fetchedItems.sortedByDescending { it.pubDate }
+                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                    }
+                }
+            } else {
+                val sources = countryFeeds[country]?.get(category) ?: emptyList()
+                withContext(Dispatchers.IO) {
+                    sources.forEach { source ->
+                        launch {
+                            val fetchedItems = parser.fetchFeed(source.first, source.second)
+                            if (fetchedItems.isNotEmpty()) {
+                                // Safely update the shared flow with the new items
+                                val currentList = _newsItems.value
+                                val combinedList = currentList + fetchedItems
+                                val mergedNews = groupSimilarNews(combinedList)
+                                
+                                // Emit the progressively grouped list back to the UI
+                                _newsItems.value = mergedNews.sortedByDescending { it.pubDate }
+                            }
                         }
                     }
                 }

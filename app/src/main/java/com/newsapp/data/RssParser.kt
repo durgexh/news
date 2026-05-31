@@ -27,12 +27,22 @@ class RssParser {
             connection.setRequestProperty("User-Agent", "Mozilla/5.0") 
             connection.connect()
             
+            val inputStream: InputStream = connection.inputStream
+            newsItems.addAll(parseFeed(inputStream, sourceName, url))
+        } catch (e: Exception) {
+            Log.e("RssParser", "Error fetching feed: $urlString", e)
+        }
+        newsItems
+    }
+
+    suspend fun parseFeed(inputStream: InputStream, sourceName: String, url: URL?): List<NewsItem> = withContext(Dispatchers.IO) {
+        val newsItems = mutableListOf<NewsItem>()
+        try {
             // Extract domain for favicon
-            val domain = url.host
+            val domain = url?.host ?: "google.com"
             val logoUrl = "https://www.google.com/s2/favicons?domain=$domain&sz=128"
             val sourceInfo = SourceInfo(name = sourceName, logoUrl = logoUrl)
             
-            val inputStream: InputStream = connection.inputStream
             val factory = XmlPullParserFactory.newInstance()
             factory.isNamespaceAware = true
             val parser = factory.newPullParser()
@@ -108,7 +118,7 @@ class RssParser {
             }
             inputStream.close()
         } catch (e: Exception) {
-            Log.e("RssParser", "Error fetching feed: $urlString", e)
+            Log.e("RssParser", "Error parsing feed", e)
         }
         newsItems
     }

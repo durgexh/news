@@ -32,6 +32,11 @@ import com.newsapp.util.UpdateManager
 import com.newsapp.viewmodel.NewsViewModel
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import com.newsapp.util.LocationHelper
+import android.Manifest
+import androidx.compose.material.icons.filled.Edit
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
@@ -41,8 +46,30 @@ fun NewsAppScreen(newsViewModel: NewsViewModel = viewModel()) {
     val categories by newsViewModel.categories.collectAsState()
     val selectedCategory by newsViewModel.selectedCategory.collectAsState()
     val selectedCountry by newsViewModel.selectedCountry.collectAsState()
+    val localCity by newsViewModel.localCity.collectAsState()
     val supportedCountries = newsViewModel.supportedCountries
     val context = LocalContext.current
+    val locationHelper = remember { LocationHelper(context) }
+    
+    var showManualCityDialog by remember { mutableStateOf(false) }
+    var manualCityInput by remember { mutableStateOf("") }
+    
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            scope.launch {
+                val city = locationHelper.getCurrentCity()
+                if (city != null) {
+                    newsViewModel.setLocalCity(city)
+                } else {
+                    showManualCityDialog = true
+                }
+            }
+        } else {
+            showManualCityDialog = true
+        }
+    }
     
     // Dynamically fetch the version name from PackageManager
     val appVersion = remember {
@@ -106,6 +133,20 @@ fun NewsAppScreen(newsViewModel: NewsViewModel = viewModel()) {
                             onClick = {
                                 newsViewModel.selectCountry(country)
                                 showCountryDialog = false
+                                if (country == "Local \uD83D\uDCCD") {
+                                    if (locationHelper.hasLocationPermission()) {
+                                        scope.launch {
+                                            val city = locationHelper.getCurrentCity()
+                                            if (city != null) {
+                                                newsViewModel.setLocalCity(city)
+                                            } else {
+                                                showManualCityDialog = true
+                                            }
+                                        }
+                                    } else {
+                                        locationPermissionLauncher.launch(Manifest.permission.ACCESS_COARSE_LOCATION)
+                                    }
+                                }
                             },
                             modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
                         ) {
@@ -122,6 +163,36 @@ fun NewsAppScreen(newsViewModel: NewsViewModel = viewModel()) {
             confirmButton = {
                 TextButton(onClick = { showCountryDialog = false }) {
                     Text("Close")
+                }
+            }
+        )
+    }
+
+    if (showManualCityDialog) {
+        AlertDialog(
+            onDismissRequest = { showManualCityDialog = false },
+            title = { Text("Enter Your City") },
+            text = {
+                OutlinedTextField(
+                    value = manualCityInput,
+                    onValueChange = { manualCityInput = it },
+                    label = { Text("City Name (e.g., Chicago)") },
+                    singleLine = true
+                )
+            },
+            confirmButton = {
+                Button(onClick = {
+                    if (manualCityInput.isNotBlank()) {
+                        newsViewModel.setLocalCity(manualCityInput.trim())
+                    }
+                    showManualCityDialog = false
+                }) {
+                    Text("Save")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showManualCityDialog = false }) {
+                    Text("Cancel")
                 }
             }
         )
@@ -146,12 +217,26 @@ fun NewsAppScreen(newsViewModel: NewsViewModel = viewModel()) {
                             fontWeight = FontWeight.Bold
                         )
                         Spacer(Modifier.height(4.dp))
-                        Text(
-                            text = selectedCountry,
-                            fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Medium
-                        )
+                        if (selectedCountry == "Local \uD83D\uDCCD" && localCity != null) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = "City: $localCity",
+                                    fontSize = 14.sp,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.Medium
+                                )
+                                IconButton(onClick = { showManualCityDialog = true }, modifier = Modifier.size(24.dp)) {
+                                    Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit City", modifier = Modifier.size(16.dp))
+                                }
+                            }
+                        } else {
+                            Text(
+                                text = selectedCountry,
+                                fontSize = 14.sp,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
                     }
                     IconButton(onClick = { showCountryDialog = true }) {
                         Icon(imageVector = Icons.Default.Public, contentDescription = "Select Region")
