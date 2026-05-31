@@ -9,7 +9,7 @@ class Converters {
     private val gson = Gson()
 
     @TypeConverter
-    fun fromSourceInfoList(value: List<SourceInfo>?): String {
+    fun fromSourceInfoList(value: List<SourceInfo>): String {
         return gson.toJson(value)
     }
 

@@ -11,6 +11,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import com.newsapp.data.NewsApiService
 import java.net.URL
+import com.newsapp.data.NewsRepository
+import com.newsapp.ui.NewsUiState
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
 // 100+ Public RSS Feeds for categories, grouped regionally
 val countryFeeds = mapOf(
@@ -329,15 +333,6 @@ val countryFeeds = mapOf(
         "Top Stories" to emptyList()
     )
 )
-
-import com.newsapp.data.NewsRepository
-import com.newsapp.ui.NewsUiState
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
-
-import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 
 @HiltViewModel
 class NewsViewModel @Inject constructor(
