@@ -164,6 +164,41 @@ val countryFeeds = mapOf(
             "https://www.billboard.com/feed/" to "Billboard",
             "https://screenrant.com/feed/" to "Screen Rant",
             "https://collider.com/feed/" to "Collider"
+        ),
+        "Education" to listOf(
+            "http://feeds.bbci.co.uk/news/education/rss.xml" to "BBC Education",
+            "https://www.edweek.org/feed/" to "Education Week",
+            "https://www.insidehighered.com/rss/feed/news" to "Inside Higher Ed"
+        ),
+        "Weather" to listOf(
+            "https://feeds.foxnews.com/foxnews/weather" to "Fox Weather",
+            "https://rss.nytimes.com/services/xml/rss/nyt/Climate.xml" to "NYT Climate",
+            "https://www.cbsnews.com/latest/rss/weather" to "CBS Weather"
+        ),
+        "Automobile" to listOf(
+            "https://www.autoblog.com/rss.xml" to "Autoblog",
+            "https://www.motortrend.com/feed/" to "MotorTrend",
+            "https://www.caranddriver.com/rss/all.xml/" to "Car and Driver"
+        ),
+        "Crime & Law" to listOf(
+            "https://lawandcrime.com/feed/" to "Law & Crime",
+            "https://www.courthousenews.com/feed/" to "Courthouse News",
+            "https://www.fbi.gov/feeds/fbi-in-the-news/rss.xml" to "FBI News"
+        ),
+        "Editorial" to listOf(
+            "https://rss.nytimes.com/services/xml/rss/nyt/Opinion.xml" to "NYT Opinion",
+            "https://feeds.washingtonpost.com/rss/opinions" to "Washington Post Opinion",
+            "https://www.theguardian.com/uk/commentisfree/rss" to "Guardian Opinion"
+        ),
+        "Trending" to listOf(
+            "https://www.buzzfeednews.com/news.xml" to "BuzzFeed Trending",
+            "https://moxie.foxnews.com/google-publisher/latest.xml" to "Fox News Latest",
+            "https://www.huffpost.com/section/front-page/feed" to "HuffPost"
+        ),
+        "National" to listOf(
+            "https://feeds.npr.org/1003/rss.xml" to "NPR National",
+            "https://abcnews.go.com/abcnews/usheadlines" to "ABC National",
+            "https://www.cbsnews.com/latest/rss/us" to "CBS National"
         )
     ),
     "United States \uD83C\uDDFA\uD83C\uDDF8" to mapOf(
