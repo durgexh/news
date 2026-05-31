@@ -278,12 +278,12 @@ fun NewsAppScreen(newsViewModel: NewsViewModel = viewModel()) {
                 )
             }
         ) { innerPadding ->
-            val newsItems by newsViewModel.newsItems.collectAsState()
-            val isLoading by newsViewModel.isLoading.collectAsState()
+            val uiState by newsViewModel.uiState.collectAsState()
             
             // Pull-to-refresh state from androidx.compose.material
+            val isRefreshing = uiState is NewsUiState.Loading
             val pullRefreshState = rememberPullRefreshState(
-                refreshing = isLoading,
+                refreshing = isRefreshing,
                 onRefresh = { newsViewModel.refreshNews() }
             )
             
@@ -293,19 +293,44 @@ fun NewsAppScreen(newsViewModel: NewsViewModel = viewModel()) {
                     .padding(innerPadding)
                     .pullRefresh(pullRefreshState)
             ) {
-                if (newsItems.isEmpty() && !isLoading) {
-                    Text(
-                        "No news available. Try pulling to refresh.",
-                        modifier = Modifier.align(Alignment.Center)
-                    )
-                    // We still need a scrollable area for pullRefresh to work properly
-                    LazyColumn(modifier = Modifier.fillMaxSize()) { }
-                } else {
-                    NewsFeed(newsItems = newsItems)
+                when (val state = uiState) {
+                    is NewsUiState.Loading -> {
+                        // Let PullRefreshIndicator handle loading state visually.
+                        // We still need a scrollable area for pullRefresh to work properly
+                        LazyColumn(modifier = Modifier.fillMaxSize()) { }
+                    }
+                    is NewsUiState.Error -> {
+                        Column(
+                            modifier = Modifier.align(Alignment.Center).padding(32.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "Error: ${state.message}", 
+                                color = MaterialTheme.colorScheme.error,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button(onClick = { newsViewModel.refreshNews() }) {
+                                Text("Retry")
+                            }
+                        }
+                        LazyColumn(modifier = Modifier.fillMaxSize()) { }
+                    }
+                    is NewsUiState.Success -> {
+                        if (state.news.isEmpty()) {
+                            Text(
+                                "No news available. Try pulling to refresh.",
+                                modifier = Modifier.align(Alignment.Center)
+                            )
+                            LazyColumn(modifier = Modifier.fillMaxSize()) { }
+                        } else {
+                            NewsFeed(newsItems = state.news)
+                        }
+                    }
                 }
 
                 PullRefreshIndicator(
-                    refreshing = isLoading,
+                    refreshing = isRefreshing,
                     state = pullRefreshState,
                     modifier = Modifier.align(Alignment.TopCenter),
                     backgroundColor = MaterialTheme.colorScheme.surface,

@@ -330,16 +330,19 @@ val countryFeeds = mapOf(
     )
 )
 
-class NewsViewModel : ViewModel() {
-    private val parser = RssParser()
-    private val apiService = NewsApiService.create()
-    
-    private val _newsItems = MutableStateFlow<List<NewsItem>>(emptyList())
-    val newsItems: StateFlow<List<NewsItem>> = _newsItems
+import com.newsapp.data.NewsRepository
+import com.newsapp.ui.NewsUiState
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading
-    
+class NewsViewModel(
+    private val repository: NewsRepository = NewsRepository()
+) : ViewModel() {
+
+    private val _uiState = MutableStateFlow<NewsUiState>(NewsUiState.Loading)
+    val uiState: StateFlow<NewsUiState> = _uiState
+
     val supportedCountries = countryFeeds.keys.toList()
 
     private val _selectedCountry = MutableStateFlow("Global \uD83C\uDF10")
@@ -369,7 +372,7 @@ class NewsViewModel : ViewModel() {
             if (defaultCategory.isNotEmpty()) {
                 fetchNews(defaultCategory, country)
             } else {
-                _newsItems.value = emptyList()
+                _uiState.value = NewsUiState.Success(emptyList())
             }
         }
     }
@@ -394,83 +397,28 @@ class NewsViewModel : ViewModel() {
 
     private fun fetchNews(category: String, country: String) {
         viewModelScope.launch {
-            _isLoading.value = true
-            
-            // Clear current news before fetching new category
-            _newsItems.value = emptyList()
+            _uiState.value = NewsUiState.Loading
 
             if (country == "Local \uD83D\uDCCD") {
                 val city = _localCity.value
                 if (!city.isNullOrBlank()) {
-                    withContext(Dispatchers.IO) {
-                        try {
-                            val responseBody = apiService.getRssFeed("rss/search?q=${city.replace(" ", "+")}+news")
-                            val fetchedItems = parser.parseFeed(responseBody.byteStream(), "$city News", URL("https://news.google.com/"))
-                            withContext(Dispatchers.Main) {
-                                _newsItems.value = fetchedItems.sortedByDescending { it.pubDate }
-                            }
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                        }
-                    }
+                    val result = repository.fetchLocalNews(city)
+                    result.fold(
+                        onSuccess = { _uiState.value = NewsUiState.Success(it) },
+                        onFailure = { _uiState.value = NewsUiState.Error(it.message ?: "Failed to fetch local news.") }
+                    )
+                } else {
+                    _uiState.value = NewsUiState.Success(emptyList())
                 }
             } else {
                 val sources = countryFeeds[country]?.get(category) ?: emptyList()
-                withContext(Dispatchers.IO) {
-                    sources.forEach { source ->
-                        launch {
-                            val fetchedItems = parser.fetchFeed(source.first, source.second)
-                            if (fetchedItems.isNotEmpty()) {
-                                // Safely update the shared flow with the new items
-                                val currentList = _newsItems.value
-                                val combinedList = currentList + fetchedItems
-                                val mergedNews = groupSimilarNews(combinedList)
-                                
-                                // Emit the progressively grouped list back to the UI
-                                _newsItems.value = mergedNews.sortedByDescending { it.pubDate }
-                            }
-                        }
-                    }
+                repository.fetchNewsStream(sources).collect { result ->
+                    result.fold(
+                        onSuccess = { _uiState.value = NewsUiState.Success(it) },
+                        onFailure = { _uiState.value = NewsUiState.Error(it.message ?: "Failed to load news stream.") }
+                    )
                 }
             }
-            // IsLoading false only after ALL coroutines launched in the IO context scope finish
-            _isLoading.value = false
         }
-    }
-
-    private fun groupSimilarNews(items: List<NewsItem>): List<NewsItem> {
-        val groupedList = mutableListOf<NewsItem>()
-        
-        for (item in items) {
-            var matched = false
-            for (i in groupedList.indices) {
-                val existingItem = groupedList[i]
-                if (isSimilar(item.title, existingItem.title)) {
-                    // Merge sources if they don't already exist
-                    val updatedSources = (existingItem.sources + item.sources).distinctBy { it.name }
-                    groupedList[i] = existingItem.copy(sources = updatedSources)
-                    matched = true
-                    break
-                }
-            }
-            if (!matched) {
-                groupedList.add(item)
-            }
-        }
-        return groupedList
-    }
-
-    private fun isSimilar(title1: String, title2: String): Boolean {
-        // Lowercase and remove punctuation to extract pure words
-        val words1 = title1.lowercase().split("\\W+".toRegex()).filter { it.length > 3 }.toSet()
-        val words2 = title2.lowercase().split("\\W+".toRegex()).filter { it.length > 3 }.toSet()
-        
-        val intersection = words1.intersect(words2).size
-        val minSize = minOf(words1.size, words2.size)
-        
-        if (minSize == 0) return false
-        
-        // If 60% of the meaningful words match, consider it the same news event
-        return intersection.toDouble() / minSize > 0.6
     }
 }
