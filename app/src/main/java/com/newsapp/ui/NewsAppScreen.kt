@@ -38,9 +38,11 @@ import com.newsapp.util.LocationHelper
 import android.Manifest
 import androidx.compose.material.icons.filled.Edit
 
+import androidx.hilt.navigation.compose.hiltViewModel
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
-fun NewsAppScreen(newsViewModel: NewsViewModel = viewModel()) {
+fun NewsAppScreen(newsViewModel: NewsViewModel = hiltViewModel()) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val categories by newsViewModel.categories.collectAsState()

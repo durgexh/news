@@ -10,6 +10,9 @@ import androidx.compose.ui.Modifier
 import com.newsapp.ui.NewsAppScreen
 import com.newsapp.ui.theme.NewsAppTheme
 
+import dagger.hilt.android.AndroidEntryPoint
+
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

@@ -10,7 +10,9 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.net.URL
 
-class NewsRepository(
+import javax.inject.Inject
+
+class NewsRepository @Inject constructor(
     private val parser: RssParser = RssParser(),
     private val apiService: NewsApiService = NewsApiService.create()
 ) {
