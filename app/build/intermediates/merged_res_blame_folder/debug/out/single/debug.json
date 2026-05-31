@@ -1,0 +1,22 @@
+[
+    {
+        "merged": "C:\\Users\\durge\\.gradle\\daemon\\9.0-milestone-1\\com.newsapp-merged_res-4:\\drawable_ic_launcher_cozy.png.flat",
+        "source": "C:\\Users\\durge\\.gradle\\daemon\\9.0-milestone-1\\com.newsapp-main-6:\\drawable\\ic_launcher_cozy.png"
+    },
+    {
+        "merged": "C:\\Users\\durge\\.gradle\\daemon\\9.0-milestone-1\\com.newsapp-merged_res-4:\\drawable_ic_launcher_world.png.flat",
+        "source": "C:\\Users\\durge\\.gradle\\daemon\\9.0-milestone-1\\com.newsapp-main-6:\\drawable\\ic_launcher_world.png"
+    },
+    {
+        "merged": "com.newsapp-merged_res-4:/drawable_ic_launcher_world.png.flat",
+        "source": "com.newsapp-main-6:/drawable/ic_launcher_world.png"
+    },
+    {
+        "merged": "C:\\Users\\durge\\.gradle\\daemon\\9.0-milestone-1\\com.newsapp-merged_res-4:\\xml_file_paths.xml.flat",
+        "source": "C:\\Users\\durge\\.gradle\\daemon\\9.0-milestone-1\\com.newsapp-main-6:\\xml\\file_paths.xml"
+    },
+    {
+        "merged": "C:\\Users\\durge\\.gradle\\daemon\\9.0-milestone-1\\com.newsapp-merged_res-4:\\drawable_ic_launcher_banana.png.flat",
+        "source": "C:\\Users\\durge\\.gradle\\daemon\\9.0-milestone-1\\com.newsapp-main-6:\\drawable\\ic_launcher_banana.png"
+    }
+]

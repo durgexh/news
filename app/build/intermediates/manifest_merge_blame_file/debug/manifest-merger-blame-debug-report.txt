@@ -1,0 +1,166 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.newsapp"
+4    android:versionCode="5"
+5    android:versionName="1.4" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="24"
+9        android:targetSdkVersion="34" />
+10
+11    <!-- Permission to fetch news feeds -->
+12    <uses-permission android:name="android.permission.INTERNET" />
+12-->C:\Users\durge\.gemini\antigravity\scratch\NewsApp\app\src\main\AndroidManifest.xml:5:5-67
+12-->C:\Users\durge\.gemini\antigravity\scratch\NewsApp\app\src\main\AndroidManifest.xml:5:22-64
+13    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+13-->C:\Users\durge\.gemini\antigravity\scratch\NewsApp\app\src\main\AndroidManifest.xml:6:5-83
+13-->C:\Users\durge\.gemini\antigravity\scratch\NewsApp\app\src\main\AndroidManifest.xml:6:22-80
+14
+15    <permission
+15-->[androidx.core:core:1.12.0] C:\Users\durge\.gradle\caches\9.0-milestone-1\transforms\043275db414bdcea8c5466c3ac674b89\transformed\core-1.12.0\AndroidManifest.xml:22:5-24:47
+16        android:name="com.newsapp.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+16-->[androidx.core:core:1.12.0] C:\Users\durge\.gradle\caches\9.0-milestone-1\transforms\043275db414bdcea8c5466c3ac674b89\transformed\core-1.12.0\AndroidManifest.xml:23:9-81
+17        android:protectionLevel="signature" />
+17-->[androidx.core:core:1.12.0] C:\Users\durge\.gradle\caches\9.0-milestone-1\transforms\043275db414bdcea8c5466c3ac674b89\transformed\core-1.12.0\AndroidManifest.xml:24:9-44
+18
+19    <uses-permission android:name="com.newsapp.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+19-->[androidx.core:core:1.12.0] C:\Users\durge\.gradle\caches\9.0-milestone-1\transforms\043275db414bdcea8c5466c3ac674b89\transformed\core-1.12.0\AndroidManifest.xml:26:5-97
+19-->[androidx.core:core:1.12.0] C:\Users\durge\.gradle\caches\9.0-milestone-1\transforms\043275db414bdcea8c5466c3ac674b89\transformed\core-1.12.0\AndroidManifest.xml:26:22-94
+20
+21    <application
+21-->C:\Users\durge\.gemini\antigravity\scratch\NewsApp\app\src\main\AndroidManifest.xml:8:5-35:19
+22        android:allowBackup="true"
+22-->C:\Users\durge\.gemini\antigravity\scratch\NewsApp\app\src\main\AndroidManifest.xml:9:9-35
+23        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+23-->[androidx.core:core:1.12.0] C:\Users\durge\.gradle\caches\9.0-milestone-1\transforms\043275db414bdcea8c5466c3ac674b89\transformed\core-1.12.0\AndroidManifest.xml:28:18-86
+24        android:debuggable="true"
+25        android:extractNativeLibs="false"
+26        android:icon="@drawable/ic_launcher_world"
+26-->C:\Users\durge\.gemini\antigravity\scratch\NewsApp\app\src\main\AndroidManifest.xml:13:9-51
+27        android:label="@string/app_name"
+27-->C:\Users\durge\.gemini\antigravity\scratch\NewsApp\app\src\main\AndroidManifest.xml:10:9-41
+28        android:roundIcon="@drawable/ic_launcher_world"
+28-->C:\Users\durge\.gemini\antigravity\scratch\NewsApp\app\src\main\AndroidManifest.xml:14:9-56
+29        android:supportsRtl="true"
+29-->C:\Users\durge\.gemini\antigravity\scratch\NewsApp\app\src\main\AndroidManifest.xml:11:9-35
+30        android:theme="@style/Theme.NewsApp" >
+30-->C:\Users\durge\.gemini\antigravity\scratch\NewsApp\app\src\main\AndroidManifest.xml:12:9-45
+31        <activity
+31-->C:\Users\durge\.gemini\antigravity\scratch\NewsApp\app\src\main\AndroidManifest.xml:15:9-23:20
+32            android:name="com.newsapp.MainActivity"
+32-->C:\Users\durge\.gemini\antigravity\scratch\NewsApp\app\src\main\AndroidManifest.xml:16:13-41
+33            android:exported="true"
+33-->C:\Users\durge\.gemini\antigravity\scratch\NewsApp\app\src\main\AndroidManifest.xml:17:13-36
+34            android:theme="@style/Theme.NewsApp" >
+34-->C:\Users\durge\.gemini\antigravity\scratch\NewsApp\app\src\main\AndroidManifest.xml:18:13-49
+35            <intent-filter>
+35-->C:\Users\durge\.gemini\antigravity\scratch\NewsApp\app\src\main\AndroidManifest.xml:19:13-22:29
+36                <action android:name="android.intent.action.MAIN" />
+36-->C:\Users\durge\.gemini\antigravity\scratch\NewsApp\app\src\main\AndroidManifest.xml:20:17-69
+36-->C:\Users\durge\.gemini\antigravity\scratch\NewsApp\app\src\main\AndroidManifest.xml:20:25-66
+37
+38                <category android:name="android.intent.category.LAUNCHER" />
+38-->C:\Users\durge\.gemini\antigravity\scratch\NewsApp\app\src\main\AndroidManifest.xml:21:17-77
+38-->C:\Users\durge\.gemini\antigravity\scratch\NewsApp\app\src\main\AndroidManifest.xml:21:27-74
+39            </intent-filter>
+40        </activity>
+41
+42        <provider
+42-->C:\Users\durge\.gemini\antigravity\scratch\NewsApp\app\src\main\AndroidManifest.xml:25:9-33:20
+43            android:name="androidx.core.content.FileProvider"
+43-->C:\Users\durge\.gemini\antigravity\scratch\NewsApp\app\src\main\AndroidManifest.xml:26:13-62
+44            android:authorities="com.newsapp.fileprovider"
+44-->C:\Users\durge\.gemini\antigravity\scratch\NewsApp\app\src\main\AndroidManifest.xml:27:13-59
+45            android:exported="false"
+45-->C:\Users\durge\.gemini\antigravity\scratch\NewsApp\app\src\main\AndroidManifest.xml:28:13-37
+46            android:grantUriPermissions="true" >
+46-->C:\Users\durge\.gemini\antigravity\scratch\NewsApp\app\src\main\AndroidManifest.xml:29:13-47
+47            <meta-data
+47-->C:\Users\durge\.gemini\antigravity\scratch\NewsApp\app\src\main\AndroidManifest.xml:30:13-32:54
+48                android:name="android.support.FILE_PROVIDER_PATHS"
+48-->C:\Users\durge\.gemini\antigravity\scratch\NewsApp\app\src\main\AndroidManifest.xml:31:17-67
+49                android:resource="@xml/file_paths" />
+49-->C:\Users\durge\.gemini\antigravity\scratch\NewsApp\app\src\main\AndroidManifest.xml:32:17-51
+50        </provider>
+51
+52        <activity
+52-->[androidx.compose.ui:ui-test-manifest:1.5.4] C:\Users\durge\.gradle\caches\9.0-milestone-1\transforms\b7ee98867c0827666110d26387e0d645\transformed\ui-test-manifest-1.5.4\AndroidManifest.xml:23:9-25:39
+53            android:name="androidx.activity.ComponentActivity"
+53-->[androidx.compose.ui:ui-test-manifest:1.5.4] C:\Users\durge\.gradle\caches\9.0-milestone-1\transforms\b7ee98867c0827666110d26387e0d645\transformed\ui-test-manifest-1.5.4\AndroidManifest.xml:24:13-63
+54            android:exported="true" />
+54-->[androidx.compose.ui:ui-test-manifest:1.5.4] C:\Users\durge\.gradle\caches\9.0-milestone-1\transforms\b7ee98867c0827666110d26387e0d645\transformed\ui-test-manifest-1.5.4\AndroidManifest.xml:25:13-36
+55        <activity
+55-->[androidx.compose.ui:ui-tooling-android:1.5.4] C:\Users\durge\.gradle\caches\9.0-milestone-1\transforms\a2b0f068e3e8ca51da67f81cc523c388\transformed\ui-tooling-release\AndroidManifest.xml:23:9-25:39
+56            android:name="androidx.compose.ui.tooling.PreviewActivity"
+56-->[androidx.compose.ui:ui-tooling-android:1.5.4] C:\Users\durge\.gradle\caches\9.0-milestone-1\transforms\a2b0f068e3e8ca51da67f81cc523c388\transformed\ui-tooling-release\AndroidManifest.xml:24:13-71
+57            android:exported="true" />
+57-->[androidx.compose.ui:ui-tooling-android:1.5.4] C:\Users\durge\.gradle\caches\9.0-milestone-1\transforms\a2b0f068e3e8ca51da67f81cc523c388\transformed\ui-tooling-release\AndroidManifest.xml:25:13-36
+58
+59        <provider
+59-->[androidx.emoji2:emoji2:1.4.0] C:\Users\durge\.gradle\caches\9.0-milestone-1\transforms\09bdf358ba7a91f39255f40c3acaf077\transformed\emoji2-1.4.0\AndroidManifest.xml:24:9-32:20
+60            android:name="androidx.startup.InitializationProvider"
+60-->[androidx.emoji2:emoji2:1.4.0] C:\Users\durge\.gradle\caches\9.0-milestone-1\transforms\09bdf358ba7a91f39255f40c3acaf077\transformed\emoji2-1.4.0\AndroidManifest.xml:25:13-67
+61            android:authorities="com.newsapp.androidx-startup"
+61-->[androidx.emoji2:emoji2:1.4.0] C:\Users\durge\.gradle\caches\9.0-milestone-1\transforms\09bdf358ba7a91f39255f40c3acaf077\transformed\emoji2-1.4.0\AndroidManifest.xml:26:13-68
+62            android:exported="false" >
+62-->[androidx.emoji2:emoji2:1.4.0] C:\Users\durge\.gradle\caches\9.0-milestone-1\transforms\09bdf358ba7a91f39255f40c3acaf077\transformed\emoji2-1.4.0\AndroidManifest.xml:27:13-37
+63            <meta-data
+63-->[androidx.emoji2:emoji2:1.4.0] C:\Users\durge\.gradle\caches\9.0-milestone-1\transforms\09bdf358ba7a91f39255f40c3acaf077\transformed\emoji2-1.4.0\AndroidManifest.xml:29:13-31:52
+64                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+64-->[androidx.emoji2:emoji2:1.4.0] C:\Users\durge\.gradle\caches\9.0-milestone-1\transforms\09bdf358ba7a91f39255f40c3acaf077\transformed\emoji2-1.4.0\AndroidManifest.xml:30:17-75
+65                android:value="androidx.startup" />
+65-->[androidx.emoji2:emoji2:1.4.0] C:\Users\durge\.gradle\caches\9.0-milestone-1\transforms\09bdf358ba7a91f39255f40c3acaf077\transformed\emoji2-1.4.0\AndroidManifest.xml:31:17-49
+66            <meta-data
+66-->[androidx.lifecycle:lifecycle-process:2.7.0] C:\Users\durge\.gradle\caches\9.0-milestone-1\transforms\23360c1f65def77065ed0000bd413acb\transformed\lifecycle-process-2.7.0\AndroidManifest.xml:29:13-31:52
+67                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+67-->[androidx.lifecycle:lifecycle-process:2.7.0] C:\Users\durge\.gradle\caches\9.0-milestone-1\transforms\23360c1f65def77065ed0000bd413acb\transformed\lifecycle-process-2.7.0\AndroidManifest.xml:30:17-78
+68                android:value="androidx.startup" />
+68-->[androidx.lifecycle:lifecycle-process:2.7.0] C:\Users\durge\.gradle\caches\9.0-milestone-1\transforms\23360c1f65def77065ed0000bd413acb\transformed\lifecycle-process-2.7.0\AndroidManifest.xml:31:17-49
+69            <meta-data
+69-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\durge\.gradle\caches\9.0-milestone-1\transforms\cf1f3586384b63b8e72cf629d16cf2fe\transformed\profileinstaller-1.3.1\AndroidManifest.xml:29:13-31:52
+70                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
+70-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\durge\.gradle\caches\9.0-milestone-1\transforms\cf1f3586384b63b8e72cf629d16cf2fe\transformed\profileinstaller-1.3.1\AndroidManifest.xml:30:17-85
+71                android:value="androidx.startup" />
+71-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\durge\.gradle\caches\9.0-milestone-1\transforms\cf1f3586384b63b8e72cf629d16cf2fe\transformed\profileinstaller-1.3.1\AndroidManifest.xml:31:17-49
+72        </provider>
+73
+74        <receiver
+74-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\durge\.gradle\caches\9.0-milestone-1\transforms\cf1f3586384b63b8e72cf629d16cf2fe\transformed\profileinstaller-1.3.1\AndroidManifest.xml:34:9-52:20
+75            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+75-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\durge\.gradle\caches\9.0-milestone-1\transforms\cf1f3586384b63b8e72cf629d16cf2fe\transformed\profileinstaller-1.3.1\AndroidManifest.xml:35:13-76
+76            android:directBootAware="false"
+76-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\durge\.gradle\caches\9.0-milestone-1\transforms\cf1f3586384b63b8e72cf629d16cf2fe\transformed\profileinstaller-1.3.1\AndroidManifest.xml:36:13-44
+77            android:enabled="true"
+77-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\durge\.gradle\caches\9.0-milestone-1\transforms\cf1f3586384b63b8e72cf629d16cf2fe\transformed\profileinstaller-1.3.1\AndroidManifest.xml:37:13-35
+78            android:exported="true"
+78-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\durge\.gradle\caches\9.0-milestone-1\transforms\cf1f3586384b63b8e72cf629d16cf2fe\transformed\profileinstaller-1.3.1\AndroidManifest.xml:38:13-36
+79            android:permission="android.permission.DUMP" >
+79-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\durge\.gradle\caches\9.0-milestone-1\transforms\cf1f3586384b63b8e72cf629d16cf2fe\transformed\profileinstaller-1.3.1\AndroidManifest.xml:39:13-57
+80            <intent-filter>
+80-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\durge\.gradle\caches\9.0-milestone-1\transforms\cf1f3586384b63b8e72cf629d16cf2fe\transformed\profileinstaller-1.3.1\AndroidManifest.xml:40:13-42:29
+81                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
+81-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\durge\.gradle\caches\9.0-milestone-1\transforms\cf1f3586384b63b8e72cf629d16cf2fe\transformed\profileinstaller-1.3.1\AndroidManifest.xml:41:17-91
+81-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\durge\.gradle\caches\9.0-milestone-1\transforms\cf1f3586384b63b8e72cf629d16cf2fe\transformed\profileinstaller-1.3.1\AndroidManifest.xml:41:25-88
+82            </intent-filter>
+83            <intent-filter>
+83-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\durge\.gradle\caches\9.0-milestone-1\transforms\cf1f3586384b63b8e72cf629d16cf2fe\transformed\profileinstaller-1.3.1\AndroidManifest.xml:43:13-45:29
+84                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
+84-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\durge\.gradle\caches\9.0-milestone-1\transforms\cf1f3586384b63b8e72cf629d16cf2fe\transformed\profileinstaller-1.3.1\AndroidManifest.xml:44:17-85
+84-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\durge\.gradle\caches\9.0-milestone-1\transforms\cf1f3586384b63b8e72cf629d16cf2fe\transformed\profileinstaller-1.3.1\AndroidManifest.xml:44:25-82
+85            </intent-filter>
+86            <intent-filter>
+86-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\durge\.gradle\caches\9.0-milestone-1\transforms\cf1f3586384b63b8e72cf629d16cf2fe\transformed\profileinstaller-1.3.1\AndroidManifest.xml:46:13-48:29
+87                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
+87-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\durge\.gradle\caches\9.0-milestone-1\transforms\cf1f3586384b63b8e72cf629d16cf2fe\transformed\profileinstaller-1.3.1\AndroidManifest.xml:47:17-88
+87-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\durge\.gradle\caches\9.0-milestone-1\transforms\cf1f3586384b63b8e72cf629d16cf2fe\transformed\profileinstaller-1.3.1\AndroidManifest.xml:47:25-85
+88            </intent-filter>
+89            <intent-filter>
+89-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\durge\.gradle\caches\9.0-milestone-1\transforms\cf1f3586384b63b8e72cf629d16cf2fe\transformed\profileinstaller-1.3.1\AndroidManifest.xml:49:13-51:29
+90                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
+90-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\durge\.gradle\caches\9.0-milestone-1\transforms\cf1f3586384b63b8e72cf629d16cf2fe\transformed\profileinstaller-1.3.1\AndroidManifest.xml:50:17-95
+90-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\durge\.gradle\caches\9.0-milestone-1\transforms\cf1f3586384b63b8e72cf629d16cf2fe\transformed\profileinstaller-1.3.1\AndroidManifest.xml:50:25-92
+91            </intent-filter>
+92        </receiver>
+93    </application>
+94
+95</manifest>
