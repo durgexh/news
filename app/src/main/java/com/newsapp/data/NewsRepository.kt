@@ -16,9 +16,12 @@ import com.newsapp.data.local.NewsDao
 import com.newsapp.data.local.NewsEntity
 import kotlinx.coroutines.flow.map
 
+import javax.inject.Singleton
+
+@Singleton
 class NewsRepository @Inject constructor(
-    private val parser: RssParser = RssParser(),
-    private val apiService: NewsApiService = NewsApiService.create(),
+    private val parser: RssParser,
+    private val apiService: NewsApiService,
     private val newsDao: NewsDao
 ) {
     fun observeNews(category: String, country: String): Flow<List<NewsItem>> {

@@ -27,16 +27,6 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideNewsRepository(
-        apiService: NewsApiService,
-        parser: RssParser,
-        newsDao: com.newsapp.data.local.NewsDao
-    ): NewsRepository {
-        return NewsRepository(parser, apiService, newsDao)
-    }
-
-    @Provides
-    @Singleton
     fun provideNewsDatabase(@dagger.hilt.android.qualifiers.ApplicationContext context: android.content.Context): com.newsapp.data.local.NewsDatabase {
         return androidx.room.Room.databaseBuilder(
             context,
