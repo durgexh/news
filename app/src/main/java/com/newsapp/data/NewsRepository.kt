@@ -31,7 +31,7 @@ class NewsRepository @Inject constructor(
     }
 
     fun observeLocalNews(city: String): Flow<List<NewsItem>> {
-        return newsDao.getLocalNews(city).map { entities ->
+        return newsDao.getLocalNews(city, "Local \uD83D\uDCCD").map { entities ->
             entities.map { it.toNewsItem() }
         }
     }
@@ -95,7 +95,7 @@ class NewsRepository @Inject constructor(
                         country = city
                     )
                 }
-                newsDao.clearLocalNews(city)
+                newsDao.clearLocalNews(city, "Local \uD83D\uDCCD")
                 newsDao.insertNews(entities)
             } else {
                 throw Exception("No local news found for $city.")
