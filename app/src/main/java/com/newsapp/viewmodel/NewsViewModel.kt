@@ -399,28 +399,53 @@ class NewsViewModel @Inject constructor(
         fetchNews(_selectedCategory.value, _selectedCountry.value)
     }
 
-    private fun fetchNews(category: String, country: String) {
-        viewModelScope.launch {
-            _uiState.value = NewsUiState.Loading
+    private var observeJob: kotlinx.coroutines.Job? = null
 
+    private fun fetchNews(category: String, country: String) {
+        observeJob?.cancel()
+
+        _uiState.value = NewsUiState.Loading
+
+        observeJob = viewModelScope.launch {
             if (country == "Local \uD83D\uDCCD") {
                 val city = _localCity.value
                 if (!city.isNullOrBlank()) {
-                    val result = repository.fetchLocalNews(city)
-                    result.fold(
-                        onSuccess = { _uiState.value = NewsUiState.Success(it) },
-                        onFailure = { _uiState.value = NewsUiState.Error(it.message ?: "Failed to fetch local news.") }
-                    )
+                    launch {
+                        repository.observeLocalNews(city).collect { cachedNews ->
+                            if (cachedNews.isNotEmpty()) {
+                                _uiState.value = NewsUiState.Success(cachedNews)
+                            }
+                        }
+                    }
+                    try {
+                        repository.refreshLocalNews(city)
+                    } catch (e: Exception) {
+                        if (_uiState.value !is NewsUiState.Success) {
+                            _uiState.value = NewsUiState.Error(e.message ?: "Failed to fetch local news.")
+                        }
+                    }
                 } else {
                     _uiState.value = NewsUiState.Success(emptyList())
                 }
             } else {
-                val sources = countryFeeds[country]?.get(category) ?: emptyList()
-                repository.fetchNewsStream(sources).collect { result ->
-                    result.fold(
-                        onSuccess = { _uiState.value = NewsUiState.Success(it) },
-                        onFailure = { _uiState.value = NewsUiState.Error(it.message ?: "Failed to load news stream.") }
-                    )
+                launch {
+                    repository.observeNews(category, country).collect { cachedNews ->
+                        if (cachedNews.isNotEmpty()) {
+                            _uiState.value = NewsUiState.Success(cachedNews)
+                        }
+                    }
+                }
+                try {
+                    val sources = countryFeeds[country]?.get(category) ?: emptyList()
+                    if (sources.isNotEmpty()) {
+                        repository.refreshNews(sources, category, country)
+                    } else {
+                        _uiState.value = NewsUiState.Success(emptyList())
+                    }
+                } catch (e: Exception) {
+                    if (_uiState.value !is NewsUiState.Success) {
+                        _uiState.value = NewsUiState.Error(e.message ?: "Failed to load news stream.")
+                    }
                 }
             }
         }

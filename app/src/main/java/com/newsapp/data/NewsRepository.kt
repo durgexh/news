@@ -12,11 +12,28 @@ import java.net.URL
 
 import javax.inject.Inject
 
+import com.newsapp.data.local.NewsDao
+import com.newsapp.data.local.NewsEntity
+import kotlinx.coroutines.flow.map
+
 class NewsRepository @Inject constructor(
     private val parser: RssParser = RssParser(),
-    private val apiService: NewsApiService = NewsApiService.create()
+    private val apiService: NewsApiService = NewsApiService.create(),
+    private val newsDao: NewsDao
 ) {
-    fun fetchNewsStream(sources: List<Pair<String, String>>): Flow<Result<List<NewsItem>>> = channelFlow {
+    fun observeNews(category: String, country: String): Flow<List<NewsItem>> {
+        return newsDao.getNewsByCategoryAndCountry(category, country).map { entities ->
+            entities.map { it.toNewsItem() }
+        }
+    }
+
+    fun observeLocalNews(city: String): Flow<List<NewsItem>> {
+        return newsDao.getLocalNews(city).map { entities ->
+            entities.map { it.toNewsItem() }
+        }
+    }
+
+    suspend fun refreshNews(sources: List<Pair<String, String>>, category: String, country: String) = withContext(Dispatchers.IO) {
         val allItems = mutableListOf<NewsItem>()
         val mutex = Mutex()
         
@@ -25,14 +42,11 @@ class NewsRepository @Inject constructor(
                 try {
                     val fetchedItems = parser.fetchFeed(source.first, source.second)
                     if (fetchedItems.isNotEmpty()) {
-                        val merged = mutex.withLock {
+                        mutex.withLock {
                             allItems.addAll(fetchedItems)
-                            groupSimilarNews(allItems)
                         }
-                        send(Result.success(merged.sortedByDescending { it.pubDate }))
                     }
                 } catch (e: Exception) {
-                    // Ignore single feed failures
                     e.printStackTrace()
                 }
             }
@@ -40,23 +54,52 @@ class NewsRepository @Inject constructor(
         
         jobs.forEach { it.join() }
         
-        if (allItems.isEmpty()) {
-            send(Result.failure(Exception("Could not fetch any news. Please check your connection.")))
+        if (allItems.isNotEmpty()) {
+            val merged = groupSimilarNews(allItems).sortedByDescending { it.pubDate }
+            val entities = merged.map { item ->
+                NewsEntity(
+                    link = item.link,
+                    title = item.title,
+                    sources = item.sources,
+                    imageUrl = item.imageUrl,
+                    pubDate = item.pubDate,
+                    category = category,
+                    country = country
+                )
+            }
+            // Clear old cache and insert new data
+            newsDao.clearNewsByCategoryAndCountry(category, country)
+            newsDao.insertNews(entities)
+        } else {
+            throw Exception("Could not fetch any news. Please check your connection.")
         }
-    }.flowOn(Dispatchers.IO)
+    }
 
-    suspend fun fetchLocalNews(city: String): Result<List<NewsItem>> = withContext(Dispatchers.IO) {
+    suspend fun refreshLocalNews(city: String) = withContext(Dispatchers.IO) {
         try {
             val responseBody = apiService.getRssFeed("rss/search?q=${city.replace(" ", "+")}+news")
             val fetchedItems = parser.parseFeed(responseBody.byteStream(), "$city News", URL("https://news.google.com/"))
             if (fetchedItems.isNotEmpty()) {
-                Result.success(fetchedItems.sortedByDescending { it.pubDate })
+                val sorted = fetchedItems.sortedByDescending { it.pubDate }
+                val entities = sorted.map { item ->
+                    NewsEntity(
+                        link = item.link,
+                        title = item.title,
+                        sources = item.sources,
+                        imageUrl = item.imageUrl,
+                        pubDate = item.pubDate,
+                        category = "Local \uD83D\uDCCD",
+                        country = city
+                    )
+                }
+                newsDao.clearLocalNews(city)
+                newsDao.insertNews(entities)
             } else {
-                Result.failure(Exception("No local news found for $city."))
+                throw Exception("No local news found for $city.")
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            Result.failure(Exception("Failed to load local news: ${e.message}"))
+            throw Exception("Failed to load local news: ${e.message}")
         }
     }
 
