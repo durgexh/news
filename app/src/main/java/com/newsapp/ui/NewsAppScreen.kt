@@ -461,3 +461,4 @@ fun NewsAppScreen(newsViewModel: NewsViewModel = hiltViewModel()) {
         }
     }
 }
+}
