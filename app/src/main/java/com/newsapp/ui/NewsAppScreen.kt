@@ -23,6 +23,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -30,6 +33,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.newsapp.util.UpdateManager
 import com.newsapp.viewmodel.NewsViewModel
+import com.newsapp.viewmodel.ChatViewModel
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -53,7 +57,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 
 import androidx.hilt.navigation.compose.hiltViewModel
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun NewsAppScreen(newsViewModel: NewsViewModel = hiltViewModel()) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -229,7 +233,11 @@ fun NewsAppScreen(newsViewModel: NewsViewModel = hiltViewModel()) {
         )
     }
 
-    ModalNavigationDrawer(
+    val pagerState = rememberPagerState(pageCount = { 2 })
+
+    HorizontalPager(state = pagerState) { page ->
+        if (page == 0) {
+            ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet(
@@ -433,6 +441,23 @@ fun NewsAppScreen(newsViewModel: NewsViewModel = hiltViewModel()) {
                     contentColor = MaterialTheme.colorScheme.primary
                 )
             }
+        }
+    }
+        } else if (page == 1) {
+            val chatViewModel = hiltViewModel<ChatViewModel>()
+            
+            // Feed the RAG manager the current news state whenever it loads
+            val uiState by newsViewModel.uiState.collectAsState()
+            LaunchedEffect(uiState) {
+                if (uiState is NewsUiState.Success) {
+                    val articles = (uiState as NewsUiState.Success).news.map { 
+                        Pair(it.title + " " + (it.description ?: ""), it.sourceName)
+                    }
+                    chatViewModel.updateNewsContext(articles)
+                }
+            }
+            
+            ChatScreen(chatViewModel = chatViewModel)
         }
     }
 }
