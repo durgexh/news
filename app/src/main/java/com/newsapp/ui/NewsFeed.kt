@@ -43,7 +43,10 @@ fun NewsFeed(newsItems: List<NewsItem>) {
         verticalArrangement = Arrangement.spacedBy(16.dp),
         modifier = Modifier.fillMaxSize()
     ) {
-        items(newsItems) { item ->
+        items(
+            items = newsItems,
+            key = { item -> item.link } // Unique key for 120 FPS smooth scrolling
+        ) { item ->
             NewsCard(item)
         }
     }

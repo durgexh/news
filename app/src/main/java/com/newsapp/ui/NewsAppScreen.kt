@@ -235,9 +235,7 @@ fun NewsAppScreen(newsViewModel: NewsViewModel = hiltViewModel()) {
 
     val pagerState = rememberPagerState(pageCount = { 2 })
 
-    HorizontalPager(state = pagerState) { page ->
-        if (page == 0) {
-            ModalNavigationDrawer(
+    ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet(
@@ -370,7 +368,9 @@ fun NewsAppScreen(newsViewModel: NewsViewModel = hiltViewModel()) {
             }
         }
     ) {
-        Scaffold(
+        HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { page ->
+            if (page == 0) {
+                Scaffold(
             topBar = {
                 CenterAlignedTopAppBar(
                     title = { Text(selectedCategory, fontWeight = FontWeight.Bold) },
@@ -442,12 +442,11 @@ fun NewsAppScreen(newsViewModel: NewsViewModel = hiltViewModel()) {
                 )
             }
         }
-    }
-        } else if (page == 1) {
-            val chatViewModel = hiltViewModel<ChatViewModel>()
-            
-            // Feed the RAG manager the current news state whenever it loads
-            val uiState by newsViewModel.uiState.collectAsState()
+            } else if (page == 1) {
+                val chatViewModel = hiltViewModel<ChatViewModel>()
+                
+                // Feed the RAG manager the current news state whenever it loads
+                val uiState by newsViewModel.uiState.collectAsState()
             LaunchedEffect(uiState) {
                 if (uiState is NewsUiState.Success) {
                     val articles = (uiState as NewsUiState.Success).news.map { 
