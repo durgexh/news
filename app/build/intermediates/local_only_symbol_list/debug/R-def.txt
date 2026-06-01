@@ -1,0 +1,8 @@
+R_DEF: Internal format may change without notice
+local
+drawable ic_launcher_banana
+drawable ic_launcher_cozy
+drawable ic_launcher_world
+string app_name
+style Theme.NewsApp
+xml file_paths
