@@ -356,6 +356,13 @@ class NewsViewModel @Inject constructor(
     private val _localCity = MutableStateFlow<String?>(null)
     val localCity: StateFlow<String?> = _localCity
 
+    private val _isDarkTheme = MutableStateFlow(true)
+    val isDarkTheme: StateFlow<Boolean> = _isDarkTheme
+
+    fun toggleTheme() {
+        _isDarkTheme.value = !_isDarkTheme.value
+    }
+
     init {
         fetchNews("All News", "Global \uD83C\uDF10")
     }

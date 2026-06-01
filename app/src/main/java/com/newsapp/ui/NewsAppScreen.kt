@@ -37,6 +37,19 @@ import androidx.activity.result.contract.ActivityResultContracts
 import com.newsapp.util.LocationHelper
 import android.Manifest
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Business
+import androidx.compose.material.icons.filled.Science
+import androidx.compose.material.icons.filled.Computer
+import androidx.compose.material.icons.filled.SportsBaseball
+import androidx.compose.material.icons.filled.LocalHospital
+import androidx.compose.material.icons.filled.School
+import androidx.compose.material.icons.filled.Cloud
+import androidx.compose.material.icons.filled.DirectionsCar
+import androidx.compose.material.icons.filled.Article
+import androidx.compose.material.icons.filled.Brightness4
+import androidx.compose.material.icons.filled.Brightness7
+import androidx.compose.material.icons.filled.LocalFireDepartment
+import androidx.compose.ui.graphics.vector.ImageVector
 
 import androidx.hilt.navigation.compose.hiltViewModel
 
@@ -49,12 +62,28 @@ fun NewsAppScreen(newsViewModel: NewsViewModel = hiltViewModel()) {
     val selectedCategory by newsViewModel.selectedCategory.collectAsState()
     val selectedCountry by newsViewModel.selectedCountry.collectAsState()
     val localCity by newsViewModel.localCity.collectAsState()
+    val isDarkTheme by newsViewModel.isDarkTheme.collectAsState()
     val supportedCountries = newsViewModel.supportedCountries
     val context = LocalContext.current
     val locationHelper = remember { LocationHelper(context) }
     
     var showManualCityDialog by remember { mutableStateOf(false) }
     var manualCityInput by remember { mutableStateOf("") }
+    
+    fun getIconForCategory(category: String): ImageVector {
+        return when {
+            category.contains("Top Stories", true) || category.contains("Trending", true) -> Icons.Default.LocalFireDepartment
+            category.contains("Business", true) || category.contains("Finance", true) -> Icons.Default.Business
+            category.contains("Technology", true) -> Icons.Default.Computer
+            category.contains("Science", true) -> Icons.Default.Science
+            category.contains("Health", true) -> Icons.Default.LocalHospital
+            category.contains("Sports", true) || category.contains("eSports", true) -> Icons.Default.SportsBaseball
+            category.contains("Education", true) -> Icons.Default.School
+            category.contains("Weather", true) -> Icons.Default.Cloud
+            category.contains("Automobile", true) -> Icons.Default.DirectionsCar
+            else -> Icons.Default.Article
+        }
+    }
     
     val locationPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -204,65 +233,130 @@ fun NewsAppScreen(newsViewModel: NewsViewModel = hiltViewModel()) {
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet(
-                modifier = Modifier.width(300.dp)
+                modifier = Modifier.width(320.dp),
+                drawerContainerColor = MaterialTheme.colorScheme.surface,
+                drawerContentColor = MaterialTheme.colorScheme.onSurface
             ) {
-                Spacer(Modifier.height(16.dp))
-                Row(
-                    modifier = Modifier.padding(16.dp).fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                // Header
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp)
                 ) {
-                    Column {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         Text(
-                            "News Categories",
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold
+                            text = "NewsApp",
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = MaterialTheme.colorScheme.primary
                         )
-                        Spacer(Modifier.height(4.dp))
-                        if (selectedCountry == "Local \uD83D\uDCCD" && localCity != null) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(
-                                    text = "City: $localCity",
-                                    fontSize = 14.sp,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    fontWeight = FontWeight.Medium
-                                )
-                                IconButton(onClick = { showManualCityDialog = true }, modifier = Modifier.size(24.dp)) {
-                                    Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit City", modifier = Modifier.size(16.dp))
-                                }
-                            }
-                        } else {
-                            Text(
-                                text = selectedCountry,
-                                fontSize = 14.sp,
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.Medium
+                        IconButton(onClick = { newsViewModel.toggleTheme() }) {
+                            Icon(
+                                imageVector = if (isDarkTheme) Icons.Default.Brightness7 else Icons.Default.Brightness4,
+                                contentDescription = "Toggle Theme"
                             )
                         }
                     }
-                    IconButton(onClick = { showCountryDialog = true }) {
-                        Icon(imageVector = Icons.Default.Public, contentDescription = "Select Region")
+                    Spacer(Modifier.height(16.dp))
+                    
+                    Surface(
+                        onClick = { showCountryDialog = true },
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                        shape = MaterialTheme.shapes.medium,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column {
+                                Text(
+                                    text = "Region",
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Spacer(Modifier.height(4.dp))
+                                if (selectedCountry == "Local \uD83D\uDCCD" && localCity != null) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(
+                                            text = "$localCity",
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 16.sp
+                                        )
+                                        IconButton(
+                                            onClick = { showManualCityDialog = true },
+                                            modifier = Modifier.size(20.dp).padding(start = 4.dp)
+                                        ) {
+                                            Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit City", modifier = Modifier.size(14.dp))
+                                        }
+                                    }
+                                } else {
+                                    Text(
+                                        text = selectedCountry,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 16.sp
+                                    )
+                                }
+                            }
+                            Icon(imageVector = Icons.Default.Public, contentDescription = "Select Region")
+                        }
                     }
                 }
-                Divider()
+                
+                Divider(modifier = Modifier.padding(horizontal = 24.dp), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
+                
+                Text(
+                    text = "CATEGORIES",
+                    modifier = Modifier.padding(start = 24.dp, top = 24.dp, bottom = 8.dp),
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    letterSpacing = 1.5.sp
+                )
+                
                 LazyColumn(modifier = Modifier.weight(1f)) {
                     items(categories) { category ->
                         NavigationDrawerItem(
-                            label = { Text(text = category) },
+                            icon = {
+                                Icon(
+                                    imageVector = getIconForCategory(category),
+                                    contentDescription = null,
+                                    tint = if (category == selectedCategory) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            },
+                            label = { 
+                                Text(
+                                    text = category,
+                                    fontWeight = if (category == selectedCategory) FontWeight.Bold else FontWeight.Medium
+                                ) 
+                            },
                             selected = category == selectedCategory,
                             onClick = {
                                 newsViewModel.selectCategory(category)
                                 scope.launch { drawerState.close() }
                             },
-                            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                            colors = NavigationDrawerItemDefaults.colors(
+                                selectedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                                unselectedContainerColor = androidx.compose.ui.graphics.Color.Transparent,
+                                selectedTextColor = MaterialTheme.colorScheme.primary,
+                                unselectedTextColor = MaterialTheme.colorScheme.onSurface
+                            ),
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp)
                         )
                     }
                 }
-                Divider()
+                
+                Divider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
+                
                 Text(
                     text = "Version $appVersion",
-                    modifier = Modifier.padding(16.dp).align(Alignment.CenterHorizontally),
-                    style = MaterialTheme.typography.labelMedium,
+                    modifier = Modifier.padding(24.dp).align(Alignment.CenterHorizontally),
+                    style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
