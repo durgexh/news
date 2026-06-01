@@ -8,13 +8,16 @@ import androidx.work.WorkManager
 import com.newsapp.util.AIModelDownloaderWorker
 import com.newsapp.util.LLMInferenceManager
 import com.newsapp.util.LocalRAGManager
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 data class ChatMessage(val role: String, val text: String)
 
-class ChatViewModel(application: Application) : AndroidViewModel(application) {
+@HiltViewModel
+class ChatViewModel @Inject constructor(application: Application) : AndroidViewModel(application) {
 
     private val llmManager = LLMInferenceManager(application)
     private val ragManager = LocalRAGManager(application)
