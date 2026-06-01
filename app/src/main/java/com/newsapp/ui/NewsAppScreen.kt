@@ -451,7 +451,8 @@ fun NewsAppScreen(newsViewModel: NewsViewModel = hiltViewModel()) {
             LaunchedEffect(uiState) {
                 if (uiState is NewsUiState.Success) {
                     val articles = (uiState as NewsUiState.Success).news.map { 
-                        Pair(it.title + " " + (it.description ?: ""), it.sourceName)
+                        val sourceName = it.sources.firstOrNull()?.name ?: "Unknown"
+                        Pair(it.title, sourceName)
                     }
                     chatViewModel.updateNewsContext(articles)
                 }
