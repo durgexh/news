@@ -164,7 +164,6 @@ fun ChatScreen(chatViewModel: ChatViewModel) {
                             labelColor = MaterialTheme.colorScheme.primary
                         ),
                         border = SuggestionChipDefaults.suggestionChipBorder(
-                            enabled = true,
                             borderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
                             borderWidth = 1.dp
                         ),
