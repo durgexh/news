@@ -30,7 +30,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.newsapp.data.NewsItem
@@ -39,8 +38,8 @@ import com.newsapp.data.SourceInfo
 @Composable
 fun NewsFeed(newsItems: List<NewsItem>) {
     LazyColumn(
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
         modifier = Modifier.fillMaxSize()
     ) {
         items(
@@ -64,12 +63,24 @@ fun NewsCard(item: NewsItem) {
                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse(item.link))
                 context.startActivity(intent)
             },
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp, pressedElevation = 4.dp),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant
         )
     ) {
         Column {
+            // Accent indicator bar at top of card
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(3.dp)
+                    .background(
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
+                        RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
+                    )
+            )
+
             // Load and display image if it exists
             if (!item.imageUrl.isNullOrBlank()) {
                 AsyncImage(
@@ -81,8 +92,7 @@ fun NewsCard(item: NewsItem) {
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(180.dp)
-                        .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
+                        .height(200.dp)
                 )
             }
 
@@ -91,14 +101,14 @@ fun NewsCard(item: NewsItem) {
             ) {
                 Text(
                     text = item.title,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 3,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    lineHeight = MaterialTheme.typography.titleMedium.lineHeight
                 )
                 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(14.dp))
                 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -149,7 +159,7 @@ fun NewsCard(item: NewsItem) {
                             }
                         }
                         
-                        Spacer(modifier = Modifier.width(4.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
                         
                         // Show text only if it's one source, otherwise show count
                         if (item.sources.size == 1) {
@@ -162,7 +172,7 @@ fun NewsCard(item: NewsItem) {
                             Text(
                                 text = "${item.sources.size} Sources",
                                 style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.Bold
                             )
                         }
@@ -186,7 +196,19 @@ fun NewsCard(item: NewsItem) {
                     items(item.sources) { source ->
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    val urlToOpen = if (source.articleUrl.isNotBlank()) source.articleUrl else item.link
+                                    try {
+                                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(urlToOpen))
+                                        context.startActivity(intent)
+                                    } catch (e: Exception) {
+                                        e.printStackTrace()
+                                    }
+                                    showDialog = false
+                                }
+                                .padding(vertical = 6.dp, horizontal = 4.dp)
                         ) {
                             AsyncImage(
                                 model = ImageRequest.Builder(LocalContext.current)
@@ -204,7 +226,8 @@ fun NewsCard(item: NewsItem) {
                             Text(
                                 text = source.name,
                                 style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurface
+                                color = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.weight(1f)
                             )
                         }
                     }

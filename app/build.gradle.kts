@@ -108,7 +108,5 @@ dependencies {
     // WorkManager for background model downloading
     implementation("androidx.work:work-runtime-ktx:2.9.0")
 
-    // MediaPipe Tasks for On-Device LLM & Embeddings
-    implementation("com.google.mediapipe:tasks-genai:0.10.14")
-    implementation("com.google.mediapipe:tasks-text:0.10.14")
+    // AI chat uses a lightweight on-device SmartResponseEngine — no heavy ML libs needed
 }

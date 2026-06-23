@@ -41,7 +41,6 @@ class RssParser {
             // Extract domain for favicon
             val domain = url?.host ?: "google.com"
             val logoUrl = "https://www.google.com/s2/favicons?domain=$domain&sz=128"
-            val sourceInfo = SourceInfo(name = sourceName, logoUrl = logoUrl)
             
             val factory = XmlPullParserFactory.newInstance()
             factory.isNamespaceAware = true
@@ -53,6 +52,7 @@ class RssParser {
             var currentLink: String? = null
             var currentPubDate: String? = null
             var currentImageUrl: String? = null
+            var currentDescription: String? = null
             var insideItem = false
 
             while (eventType != XmlPullParser.END_DOCUMENT) {
@@ -75,6 +75,8 @@ class RssParser {
                                 }
                             } else if (nodeName.equals("pubDate", ignoreCase = true) || nodeName.equals("published", ignoreCase = true) || nodeName.equals("updated", ignoreCase = true)) {
                                 currentPubDate = parser.nextText()
+                            } else if (nodeName.equals("description", ignoreCase = true) || nodeName.equals("summary", ignoreCase = true)) {
+                                currentDescription = parser.nextText()
                             } else if (nodeName.equals("content", ignoreCase = true) && parser.prefix == "media") {
                                 // <media:content url="...">
                                 currentImageUrl = parser.getAttributeValue(null, "url")
@@ -96,12 +98,22 @@ class RssParser {
                         if (nodeName.equals("item", ignoreCase = true) || nodeName.equals("entry", ignoreCase = true)) {
                             if (currentTitle != null && currentLink != null) {
                                 val formattedDate = formatDate(currentPubDate)
+                                val trimmedLink = currentLink.trim()
+                                
+                                // Fallback to description image extraction if currentImageUrl is null
+                                val finalImageUrl = currentImageUrl ?: currentDescription?.let { extractImageUrlFromDescription(it) }
+                                
+                                val articleSourceInfo = SourceInfo(
+                                    name = sourceName,
+                                    logoUrl = logoUrl,
+                                    articleUrl = trimmedLink
+                                )
                                 newsItems.add(
                                     NewsItem(
                                         title = currentTitle.trim(),
-                                        link = currentLink.trim(),
-                                        sources = listOf(sourceInfo),
-                                        imageUrl = currentImageUrl,
+                                        link = trimmedLink,
+                                        sources = listOf(articleSourceInfo),
+                                        imageUrl = finalImageUrl,
                                         pubDate = formattedDate
                                     )
                                 )
@@ -111,6 +123,7 @@ class RssParser {
                             currentLink = null
                             currentPubDate = null
                             currentImageUrl = null
+                            currentDescription = null
                         }
                     }
                 }
@@ -123,10 +136,24 @@ class RssParser {
         newsItems
     }
 
+    private fun extractImageUrlFromDescription(html: String): String? {
+        try {
+            // Find <img src="URL" or similar inside the HTML
+            val regex = """<img[^>]+src=["']([^"']+)["']""".toRegex(RegexOption.IGNORE_CASE)
+            val match = regex.find(html)
+            if (match != null) {
+                return match.groupValues[1]
+            }
+        } catch (e: Exception) {
+            // Ignore
+        }
+        return null
+    }
+
     private fun formatDate(dateString: String?): String {
         if (dateString.isNullOrBlank()) return "Unknown Date"
         
-        // Try multiple common RSS formts
+        // Try multiple common RSS formats
         val formats = listOf(
             "EEE, dd MMM yyyy HH:mm:ss zzz", // RFC 822
             "EEE, dd MMM yyyy HH:mm:ss Z",   // RFC 822 with numbers

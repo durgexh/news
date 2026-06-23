@@ -2,7 +2,8 @@ package com.newsapp.data
 
 data class SourceInfo(
     val name: String,
-    val logoUrl: String
+    val logoUrl: String,
+    val articleUrl: String = ""
 )
 
 data class NewsItem(
