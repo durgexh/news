@@ -21,7 +21,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -34,13 +33,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.newsapp.util.UpdateManager
 import com.newsapp.viewmodel.NewsViewModel
-import com.newsapp.viewmodel.ChatViewModel
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import com.newsapp.util.LocationHelper
-import com.newsapp.util.LocalRAGManager
 import android.Manifest
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Business
@@ -55,8 +52,6 @@ import androidx.compose.material.icons.filled.Article
 import androidx.compose.material.icons.filled.Brightness4
 import androidx.compose.material.icons.filled.Brightness7
 import androidx.compose.material.icons.filled.LocalFireDepartment
-import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.Feed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 
@@ -78,9 +73,6 @@ fun NewsAppScreen(newsViewModel: NewsViewModel = hiltViewModel()) {
     
     var showManualCityDialog by remember { mutableStateOf(false) }
     var manualCityInput by remember { mutableStateOf("") }
-
-    // Bottom nav state: 0 = Feed, 1 = AI Chat
-    var selectedTab by remember { mutableIntStateOf(0) }
     
     fun getIconForCategory(category: String): ImageVector {
         return when {
@@ -244,7 +236,7 @@ fun NewsAppScreen(newsViewModel: NewsViewModel = hiltViewModel()) {
     // ===== Main Layout: Drawer wraps content directly (no HorizontalPager) =====
     ModalNavigationDrawer(
         drawerState = drawerState,
-        gesturesEnabled = selectedTab == 0, // Only enable drawer swipe on Feed tab
+        gesturesEnabled = true,
         drawerContent = {
             ModalDrawerSheet(
                 modifier = Modifier.width(320.dp),
@@ -399,8 +391,7 @@ fun NewsAppScreen(newsViewModel: NewsViewModel = hiltViewModel()) {
         // ===== Content with Bottom Navigation =====
         Scaffold(
             topBar = {
-                if (selectedTab == 0) {
-                    CenterAlignedTopAppBar(
+                CenterAlignedTopAppBar(
                         title = {
                             Text(
                                 selectedCategory,
@@ -419,256 +410,181 @@ fun NewsAppScreen(newsViewModel: NewsViewModel = hiltViewModel()) {
                             navigationIconContentColor = MaterialTheme.colorScheme.onSurface
                         )
                     )
-                }
-            },
-            bottomBar = {
-                NavigationBar(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    contentColor = MaterialTheme.colorScheme.onSurface,
-                    tonalElevation = 4.dp
-                ) {
-                    NavigationBarItem(
-                        selected = selectedTab == 0,
-                        onClick = { selectedTab = 0 },
-                        icon = {
-                            Icon(
-                                imageVector = Icons.Default.Feed,
-                                contentDescription = "News Feed"
-                            )
-                        },
-                        label = { Text("Feed") },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MaterialTheme.colorScheme.primary,
-                            selectedTextColor = MaterialTheme.colorScheme.primary,
-                            indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
-                            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    )
-                    NavigationBarItem(
-                        selected = selectedTab == 1,
-                        onClick = { selectedTab = 1 },
-                        icon = {
-                            Icon(
-                                imageVector = Icons.Default.AutoAwesome,
-                                contentDescription = "AI Chat"
-                            )
-                        },
-                        label = { Text("AI Chat") },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MaterialTheme.colorScheme.primary,
-                            selectedTextColor = MaterialTheme.colorScheme.primary,
-                            indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
-                            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    )
-                }
             }
         ) { innerPadding ->
-            // Content switching based on selected tab
-            when (selectedTab) {
-                0 -> {
-                    // News Feed Tab
-                    val uiState by newsViewModel.uiState.collectAsState()
-                    
-                    val isRefreshing = uiState is NewsUiState.Loading
-                    val pullRefreshState = rememberPullRefreshState(
-                        refreshing = isRefreshing,
-                        onRefresh = { newsViewModel.refreshNews() }
-                    )
-                    
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(innerPadding)
-                            .pullRefresh(pullRefreshState)
-                    ) {
-                        when (val state = uiState) {
-                            is NewsUiState.Loading -> {
-                                LazyColumn(modifier = Modifier.fillMaxSize()) { }
+            // News Feed Content
+            val uiState by newsViewModel.uiState.collectAsState()
+            
+            val isRefreshing = uiState is NewsUiState.Loading
+            val pullRefreshState = rememberPullRefreshState(
+                refreshing = isRefreshing,
+                onRefresh = { newsViewModel.refreshNews() }
+            )
+            
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .pullRefresh(pullRefreshState)
+            ) {
+                when (val state = uiState) {
+                    is NewsUiState.Loading -> {
+                        LazyColumn(modifier = Modifier.fillMaxSize()) { }
+                    }
+                    is NewsUiState.Error -> {
+                        Column(
+                            modifier = Modifier.align(Alignment.Center).padding(32.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "Error: ${state.message}", 
+                                color = MaterialTheme.colorScheme.error,
+                                fontWeight = FontWeight.Bold,
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button(
+                                onClick = { newsViewModel.refreshNews() },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.primary
+                                )
+                            ) {
+                                Text("Retry")
                             }
-                            is NewsUiState.Error -> {
-                                Column(
-                                    modifier = Modifier.align(Alignment.Center).padding(32.dp),
-                                    horizontalAlignment = Alignment.CenterHorizontally
+                        }
+                        LazyColumn(modifier = Modifier.fillMaxSize()) { }
+                    }
+                    is NewsUiState.Success -> {
+                        if (state.news.isEmpty()) {
+                            if (selectedCountry == "Local \uD83D\uDCCD" && localCity.isNullOrBlank()) {
+                                Card(
+                                    modifier = Modifier
+                                        .align(Alignment.Center)
+                                        .padding(24.dp)
+                                        .fillMaxWidth(),
+                                    shape = RoundedCornerShape(24.dp),
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                                    ),
+                                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                                 ) {
-                                    Text(
-                                        text = "Error: ${state.message}", 
-                                        color = MaterialTheme.colorScheme.error,
-                                        fontWeight = FontWeight.Bold,
-                                        style = MaterialTheme.typography.bodyLarge
-                                    )
-                                    Spacer(modifier = Modifier.height(16.dp))
-                                    Button(
-                                        onClick = { newsViewModel.refreshNews() },
-                                        colors = ButtonDefaults.buttonColors(
-                                            containerColor = MaterialTheme.colorScheme.primary
-                                        )
+                                    Column(
+                                        modifier = Modifier.padding(28.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.Center
                                     ) {
-                                        Text("Retry")
-                                    }
-                                }
-                                LazyColumn(modifier = Modifier.fillMaxSize()) { }
-                            }
-                            is NewsUiState.Success -> {
-                                if (state.news.isEmpty()) {
-                                    if (selectedCountry == "Local \uD83D\uDCCD" && localCity.isNullOrBlank()) {
-                                        Card(
+                                        Box(
                                             modifier = Modifier
-                                                .align(Alignment.Center)
-                                                .padding(24.dp)
-                                                .fillMaxWidth(),
-                                            shape = RoundedCornerShape(24.dp),
-                                            colors = CardDefaults.cardColors(
-                                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                                            ),
-                                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                                                .size(72.dp)
+                                                .clip(CircleShape)
+                                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
+                                            contentAlignment = Alignment.Center
                                         ) {
-                                            Column(
-                                                modifier = Modifier.padding(28.dp),
-                                                horizontalAlignment = Alignment.CenterHorizontally,
-                                                verticalArrangement = Arrangement.Center
-                                            ) {
-                                                Box(
-                                                    modifier = Modifier
-                                                        .size(72.dp)
-                                                        .clip(CircleShape)
-                                                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
-                                                    contentAlignment = Alignment.Center
-                                                ) {
-                                                    Icon(
-                                                        imageVector = Icons.Default.Public,
-                                                        contentDescription = null,
-                                                        modifier = Modifier.size(36.dp),
-                                                        tint = MaterialTheme.colorScheme.primary
-                                                    )
-                                                }
-                                                
-                                                Spacer(modifier = Modifier.height(20.dp))
-                                                
-                                                Text(
-                                                    text = "Local News Onboarding",
-                                                    style = MaterialTheme.typography.titleLarge,
-                                                    fontWeight = FontWeight.Bold,
-                                                    color = MaterialTheme.colorScheme.onSurface
-                                                )
-                                                
-                                                Spacer(modifier = Modifier.height(8.dp))
-                                                
-                                                Text(
-                                                    text = "Enter your city or enable location services to get personalized local news updates around you.",
-                                                    style = MaterialTheme.typography.bodyMedium,
-                                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                                                )
-                                                
-                                                Spacer(modifier = Modifier.height(24.dp))
-                                                
-                                                Button(
-                                                    onClick = {
-                                                        if (locationHelper.hasLocationPermission()) {
-                                                            scope.launch {
-                                                                val city = locationHelper.getCurrentCity()
-                                                                if (city != null) {
-                                                                    newsViewModel.setLocalCity(city)
-                                                                } else {
-                                                                    showManualCityDialog = true
-                                                                }
-                                                            }
+                                            Icon(
+                                                imageVector = Icons.Default.Public,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(36.dp),
+                                                tint = MaterialTheme.colorScheme.primary
+                                            )
+                                        }
+                                        
+                                        Spacer(modifier = Modifier.height(20.dp))
+                                        
+                                        Text(
+                                            text = "Local News Onboarding",
+                                            style = MaterialTheme.typography.titleLarge,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                        
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        
+                                        Text(
+                                            text = "Enter your city or enable location services to get personalized local news updates around you.",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                        )
+                                        
+                                        Spacer(modifier = Modifier.height(24.dp))
+                                        
+                                        Button(
+                                            onClick = {
+                                                if (locationHelper.hasLocationPermission()) {
+                                                    scope.launch {
+                                                        val city = locationHelper.getCurrentCity()
+                                                        if (city != null) {
+                                                            newsViewModel.setLocalCity(city)
                                                         } else {
-                                                            locationPermissionLauncher.launch(Manifest.permission.ACCESS_COARSE_LOCATION)
+                                                            showManualCityDialog = true
                                                         }
-                                                    },
-                                                    modifier = Modifier.fillMaxWidth(),
-                                                    shape = RoundedCornerShape(12.dp)
-                                                ) {
-                                                    Row(
-                                                        verticalAlignment = Alignment.CenterVertically,
-                                                        horizontalArrangement = Arrangement.Center
-                                                    ) {
-                                                        Icon(
-                                                            imageVector = Icons.Default.Public,
-                                                            contentDescription = null,
-                                                            modifier = Modifier.size(18.dp)
-                                                        )
-                                                        Spacer(modifier = Modifier.width(8.dp))
-                                                        Text("Detect Location")
                                                     }
+                                                } else {
+                                                    locationPermissionLauncher.launch(Manifest.permission.ACCESS_COARSE_LOCATION)
                                                 }
-                                                
-                                                Spacer(modifier = Modifier.height(8.dp))
-                                                
-                                                OutlinedButton(
-                                                    onClick = { showManualCityDialog = true },
-                                                    modifier = Modifier.fillMaxWidth(),
-                                                    shape = RoundedCornerShape(12.dp)
-                                                ) {
-                                                    Row(
-                                                        verticalAlignment = Alignment.CenterVertically,
-                                                        horizontalArrangement = Arrangement.Center
-                                                    ) {
-                                                        Icon(
-                                                            imageVector = Icons.Default.Edit,
-                                                            contentDescription = null,
-                                                            modifier = Modifier.size(18.dp)
-                                                        )
-                                                        Spacer(modifier = Modifier.width(8.dp))
-                                                        Text("Enter City Manually")
-                                                    }
-                                                }
+                                            },
+                                            modifier = Modifier.fillMaxWidth(),
+                                            shape = RoundedCornerShape(12.dp)
+                                        ) {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.Center
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Public,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(18.dp)
+                                                )
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Text("Detect Location")
                                             }
                                         }
-                                        LazyColumn(modifier = Modifier.fillMaxSize()) { }
-                                    } else {
-                                        Text(
-                                            "No news available. Try pulling to refresh.",
-                                            modifier = Modifier.align(Alignment.Center),
-                                            style = MaterialTheme.typography.bodyLarge,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                        LazyColumn(modifier = Modifier.fillMaxSize()) { }
+                                        
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        
+                                        OutlinedButton(
+                                            onClick = { showManualCityDialog = true },
+                                            modifier = Modifier.fillMaxWidth(),
+                                            shape = RoundedCornerShape(12.dp)
+                                        ) {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.Center
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Edit,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(18.dp)
+                                                )
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Text("Enter City Manually")
+                                            }
+                                        }
                                     }
-                                } else {
-                                    NewsFeed(newsItems = state.news)
                                 }
-                            }
-                        }
-
-                        PullRefreshIndicator(
-                            refreshing = isRefreshing,
-                            state = pullRefreshState,
-                            modifier = Modifier.align(Alignment.TopCenter),
-                            backgroundColor = MaterialTheme.colorScheme.surface,
-                            contentColor = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
-                1 -> {
-                    // AI Chat Tab
-                    val chatViewModel = hiltViewModel<ChatViewModel>()
-                    
-                    // Feed the RAG manager the current news state whenever it loads
-                    val uiState by newsViewModel.uiState.collectAsState()
-                    LaunchedEffect(uiState) {
-                        if (uiState is NewsUiState.Success) {
-                            val articles = (uiState as NewsUiState.Success).news.map { item ->
-                                val sourceName = item.sources.firstOrNull()?.name ?: "Unknown"
-                                LocalRAGManager.ArticleData(
-                                    title = item.title,
-                                    description = item.title, // Use title as description since NewsItem doesn't have a description field
-                                    source = sourceName,
-                                    pubDate = item.pubDate
+                                LazyColumn(modifier = Modifier.fillMaxSize()) { }
+                            } else {
+                                Text(
+                                    "No news available. Try pulling to refresh.",
+                                    modifier = Modifier.align(Alignment.Center),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
+                                LazyColumn(modifier = Modifier.fillMaxSize()) { }
                             }
-                            chatViewModel.updateNewsContext(articles)
+                        } else {
+                            NewsFeed(newsItems = state.news)
                         }
                     }
-                    
-                    Box(modifier = Modifier.padding(innerPadding)) {
-                        ChatScreen(chatViewModel = chatViewModel)
-                    }
                 }
+
+                PullRefreshIndicator(
+                    refreshing = isRefreshing,
+                    state = pullRefreshState,
+                    modifier = Modifier.align(Alignment.TopCenter),
+                    backgroundColor = MaterialTheme.colorScheme.surface,
+                    contentColor = MaterialTheme.colorScheme.primary
+                )
             }
         }
     }
